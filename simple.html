@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Expresiones en Español</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --correct-bg: #d1fae5;
+            --correct-border: #10b981;
+            --correct-text: #065f46;
+            --incorrect-bg: #fee2e2;
+            --incorrect-border: #ef4444;
+            --incorrect-text: #991b1b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 600px;
+            padding: 28px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #111827;
+        }
+
+        .expression-card {
+            background-color: #f9fafb;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .expression-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1d4ed8;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+        }
+
+        /* Post-submission styles */
+        .option-label.correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct-border) !important;
+            color: var(--correct-text);
+            font-weight: 600;
+        }
+
+        .option-label.incorrect {
+            background-color: var(--incorrect-bg) !important;
+            border-color: var(--incorrect-border) !important;
+            color: var(--incorrect-text);
+        }
+
+        .examples-box {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .examples-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .examples-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-style: italic;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        .examples-list li {
+            margin-bottom: 4px;
+        }
+
+        .feedback-message {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .feedback-message.correct {
+            color: var(--correct-border);
+        }
+
+        .feedback-message.incorrect {
+            color: var(--incorrect-border);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .exit-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .exit-screen h2 {
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+        <h1>Quiz de Expresiones en Español</h1>
+
+        <div id="quiz-screen">
+            <div class="expression-card">
+                <div class="expression-title" id="expression-text">--</div>
+            </div>
+
+            <div class="options-container" id="options-container">
+                </div>
+
+            <div class="examples-box">
+                <div class="examples-title">Ejemplos de uso</div>
+                <ul class="examples-list" id="examples-list">
+                    </ul>
+            </div>
+
+            <div class="feedback-message" id="feedback"></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="btn-submit" onclick="submitAnswer()">Enviar</button>
+                <button class="btn btn-primary hidden" id="btn-next" onclick="loadNextQuestion()">Siguiente</button>
+                <button class="btn btn-secondary hidden" id="btn-exit-active" onclick="exitApp()">Salir</button>
+            </div>
+        </div>
+
+        <div id="exit-screen" class="exit-screen hidden">
+            <h2>¡Gracias por practicar!</h2>
+            <p style="margin-bottom: 20px; color: #4b5563;">Has completado tu sesión de estudio.</p>
+            <button class="btn btn-primary" onclick="restartQuiz()">Reiniciar Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const expressions = [
+          { "id": "exp_001", "expression": "Tomar el pelo", "meaning": "Bromear o engañar a alguien de forma simpática o burlona.", "distractors": ["Cortar o peinar el cabello a una persona.", "Estar muy enfadado o perder la paciencia con alguien."], "examples": ["No me digas que me ha tocado la lotería, ¡me estás tomando el pelo!", "A Juan le gusta tomarle el pelo a su hermano diciendo que los ovnis existen."] },
+          { "id": "exp_002", "expression": "Arrimar el hombro", "meaning": "Colaborar o ayudar de manera activa en una tarea común.", "distractors": ["Empujar a alguien para abrirse paso en una multitud.", "Descansar recostándose sobre otra persona."], "examples": ["Si todos arrimamos el hombro, terminaremos la mudanza en un par de horas.", "En los momentos difíciles es cuando el equipo tiene que arrimar el hombro."] },
+          { "id": "exp_003", "expression": "Meter la pata", "meaning": "Cometer un error o decir algo inoportuno.", "distractors": ["Pisar a alguien sin querer al caminar.", "Sufrir una lesión leve en el pie."], "examples": ["Creo que metí la pata al preguntarle por su exnovio.", "Metiste la pata al contarle el secreto a María."] },
+          { "id": "exp_004", "expression": "Tirar la casa por la ventana", "meaning": "Gastar mucho dinero o derrochar en una celebración.", "distractors": ["Hacer limpieza profunda tirando objetos viejos.", "Mudarse de vivienda de forma apresurada."], "examples": ["En la boda de su hija tiraron la casa por la ventana.", "Para mi cumpleaños pienso tirar la casa por la ventana y alquilar un yate."] },
+          { "id": "exp_005", "expression": "Costar un ojo de la cara", "meaning": "Tener un precio excesivamente elevado.", "distractors": ["Mirar fijamente algo hasta que duelen los ojos.", "Padecer un problema médico en la visión."], "examples": ["Ese coche deportivo cuesta un ojo de la cara.", "Reparar el tejado nos va a costar un ojo de la cara."] },
+          { "id": "exp_006", "expression": "Dar la lata", "meaning": "Molestar, insistir o ser pesado con algo.", "distractors": ["Entregar un recipiente metálico a alguien.", "Reciclar envases en el contenedor adecuado."], "examples": ["Mi hermano pequeño estuvo dando la lata todo el día para ir al parque.", "Siento darte la lata, pero necesito que me firmes este documento."] },
+          { "id": "exp_007", "expression": "Irse por las ramas", "meaning": "Desviarse del tema principal al hablar.", "distractors": ["Escalar árboles en la naturaleza.", "Hacer ejercicios de equilibrio en el parque."], "examples": ["Al profesor le gusta irse por las ramas cuando le hacemos preguntas difíciles.", "No te vayas por las ramas y dime de una vez cuánto ha costado."] },
+          { "id": "exp_008", "expression": "Hablar por los codos", "meaning": "Hablar demasiado y de forma ininterrumpida.", "distractors": ["Gesticular en exceso al expresarse.", "Hablar en voz muy baja o en secreto."], "examples": ["Tu prima habla por los codos, no me dejó decir ni una palabra.", "Cuando estoy nervioso tiendo a hablar por los codos."] },
+          { "id": "exp_009", "expression": "Ser pan comido", "meaning": "Ser algo muy fácil de realizar.", "distractors": ["Tener un apetito insaciable.", "Preparar un bocadillo rápido para comer."], "examples": ["El examen de historia fue pan comido.", "No te preocupes por la instalación del programa, es pan comido."] },
+          { "id": "exp_010", "expression": "Estar como una cabra", "meaning": "Estar chiflado, loco o actuar de forma extravagante.", "distractors": ["Tener mucho apetito por cosas vegetales.", "Vivir en zonas de alta montaña."], "examples": ["Ese chico está como una cabra, saltó al agua con la ropa puesta.", "A veces pienso que mi abuelo está como una cabra con sus ocurrencias."] },
+          { "id": "exp_011", "expression": "Dar gato por liebre", "meaning": "Engañar a alguien dándole algo de menor calidad de lo prometido.", "distractors": ["Adoptar una mascota equivocada en el refugio.", "Preparar una receta con ingredientes sustitutivos."], "examples": ["En la tienda me dieron gato por liebre con esta chaqueta sintética.", "Asegúrate de revisar el producto antes de pagar para que no te den gato por liebre."] },
+          { "id": "exp_012", "expression": "Quedarse de piedra", "meaning": "Quedarse muy sorprendido o impactado ante una noticia.", "distractors": ["Permanecer inmóvil sin poder moverse por frío.", "Sufrir una parálisis temporal por cansancio."], "examples": ["Me quedé de piedra cuando supe que cerraban la empresa.", "Al ver el regalo de aniversario se quedó de piedra."] },
+          { "id": "exp_013", "expression": "Dormir a pierna suelta", "meaning": "Dormir profundamente y de forma muy relajada.", "distractors": ["Dormir sin mantas ni ropa de cama.", "Tener calambres en las piernas mientras se duerme."], "examples": ["Después de la excursión dormí a pierna suelta toda la noche.", "A pesar del ruido de la calle, ella duerme a pierna suelta."] },
+          { "id": "exp_014", "expression": "Poner la mano en el fuego", "meaning": "Confiar ciegamente en la honestidad o inocencia de alguien.", "distractors": ["Sufrir un accidente al cocinar en casa.", "Arriesgar la salud en una apuesta insensata."], "examples": ["Pondría la mano en el fuego por mi hermano, él no robó nada.", "No pongas la mano en el fuego por él sin conocer toda la historia."] },
+          { "id": "exp_015", "expression": "Echar una mano", "meaning": "Ayudar a alguien con alguna tarea o problema.", "distractors": ["Saludar a alguien alzando la extremidad superior.", "Lanzar algo a otra persona para que lo atrape."], "examples": ["¿Puedes echarme una mano con estas bolsas de la compra?", "Siempre está dispuesto a echar una mano a sus vecinos."] },
+          { "id": "exp_016", "expression": "Estar sin blanca", "meaning": "No tener nada de dinero.", "distractors": ["Vestir únicamente prendas de color claro.", "Tener la piel pálida por falta de sol."], "examples": ["A finales de mes siempre estoy sin blanca.", "No puedo ir al cine con vosotros porque me he quedado sin blanca."] },
+          { "id": "exp_017", "expression": "No pegar ojo", "meaning": "No poder dormir en toda la noche.", "distractors": ["Tener problemas de visión o irritación en los ojos.", "Evitar el contacto visual con otra persona."], "examples": ["Con el ruido del tráfico no he pegado ojo en toda la noche.", "Estaba tan nervioso por la entrevista que no pegué ojo."] },
+          { "id": "exp_018", "expression": "Romper el hielo", "meaning": "Superar la timidez inicial en una conversación o grupo.", "distractors": ["Destruir un bloque helado con herramientas.", "Enfriar una bebida con cubitos picados."], "examples": ["El profesor contó un chiste para romper el hielo el primer día.", "Una buena forma de romper el hielo es hacer un cumplido sincero."] },
+          { "id": "exp_019", "expression": "Poner las cartas sobre la mesa", "meaning": "Hablar con total claridad y sinceridad sobre las intenciones.", "distractors": ["Organizar un juego de mesa entre amigos.", "Mostrar la documentación requerida en un trámite."], "examples": ["Es hora de poner las cartas sobre la mesa y decidir nuestro futuro.", "Puso las cartas sobre la mesa y admitió sus errores."] },
+          { "id": "exp_020", "expression": "Dar en el clavo", "meaning": "Acertar plenamente en una deducción o solución.", "distractors": ["Herirse los dedos al usar un martillo.", "Colgar un cuadro correctamente en la pared."], "examples": ["Has dado en el clavo con tu análisis del problema.", "Con la respuesta que dio en el concurso dio de lleno en el clavo."] },
+          { "id": "exp_021", "expression": "Quitarse un peso de encima", "meaning": "Liberarse de una preocupación o responsabilidad grande.", "distractors": ["Perder peso tras hacer dieta y ejercicio.", "Descargar cajas pesadas de un vehículo."], "examples": ["Cuando entregué el proyecto final me quité un gran peso de encima.", "Hablar con él sobre el malentendido me quitó un peso de encima."] },
+          { "id": "exp_022", "expression": "Estar entre la espada y la pared", "meaning": "Encontrarse en una situación de difícil elección sin salida.", "distractors": ["Participar en un combate de esgrima.", "Sentirse acorralado físicamente en un espacio estrecho."], "examples": ["Me siento entre la espada y la pared: si voy a la fiesta enfado a mi madre y si no voy enfado a mi amigo.", "La empresa está entre la espada y la pared por la crisis."] },
+          { "id": "exp_023", "expression": "Estar como pez en el agua", "meaning": "Sentirse muy cómodo e integrado en un lugar o situación.", "distractors": ["Tener mucha sed después de hacer ejercicio.", "Saber nadar con excelente técnica en el mar."], "examples": ["En la conferencia de informática se sentía como pez en el agua.", "A ella le encanta el teatro y en el escenario está como pez en el agua."] },
+          { "id": "exp_024", "expression": "Poner verde a alguien", "meaning": "Criticar duramente o hablar mal de una persona a sus espaldas.", "distractors": ["Manchar a alguien con pintura o sustancias ecológicas.", "Envidiar el éxito o las pertenencias de otra persona."], "examples": ["Estuvieron toda la tarde poniendo verde a su nueva compañera.", "No me gusta cuando se dedican a poner verde a la gente."] },
+          { "id": "exp_025", "expression": "Tener mala leche", "meaning": "Tener mal carácter, mal humor o malas intenciones.", "distractors": ["Conservar productos lácteos caducados.", "Padecer intolerancia a la lactosa."], "examples": ["Ese profesor tiene muy mala leche cuando los alumnos llegan tarde.", "No le hagas caso, responde así porque hoy tiene mala leche."] },
+          { "id": "exp_026", "expression": "Salir por patas", "meaning": "Huir o escapar corriendo de un lugar rápidamente.", "distractors": ["Caminar a cuatro patas por el suelo.", "Hacer ejercicio de carreras intensas."], "examples": ["Cuando sonó la alarma de la tienda, el ladrón salió por patas.", "Vimos aparecer al perro guardián y salimos por patas."] },
+          { "id": "exp_027", "expression": "Ir al grano", "meaning": "Ir directamente a lo importante sin rodeos.", "distractors": ["Ir a una granja o terreno de cultivo de cereales.", "Tratar una afección o grano en la piel."], "examples": ["No tenemos mucho tiempo, así que vamos al grano con la reunión.", "Déjate de historias e ve al grano con lo que pasó."] },
+          { "id": "exp_028", "expression": "Pillar con las manos en la masa", "meaning": "Sorprender a alguien en el momento exacto en que comete algo malo.", "distractors": ["Ayudar a alguien mientras prepara pan o repostería.", "Ensuciarse las manos durante un trabajo manual."], "examples": ["Lo pillaron con las manos en la masa intentando copiar en el examen.", "La policía llegó a tiempo y pilló a los ladrones con las manos en la masa."] },
+          { "id": "exp_029", "expression": "Dar plantón", "meaning": "No acudir a una cita pactada dejando a la otra persona esperando.", "distractors": ["Sembrar plantas o árboles en un jardín.", "Quedarse inmóvil durante mucho tiempo en un sitio."], "examples": ["Me dio plantón en la cafetería y estuve esperándole una hora.", "No es la primera vez que le da plantón a sus amigos."] },
+          { "id": "exp_030", "expression": "Cantar las cuarenta", "meaning": "Reñir o decirle a alguien las verdades claramente.", "distractors": ["Entonar canciones populares o tradicionales.", "Llegar a la edad de cuarenta años."], "examples": ["Le canté las cuarenta por no haber hecho su parte del trabajo.", "Como vuelva a llegar tarde, el jefe le va a cantar las cuarenta."] },
+          { "id": "exp_031", "expression": "Quedarse en blanco", "meaning": "Olvidarse repentinamente de lo que se iba a decir o escribir.", "distractors": ["Pintar una pared o lienzo de color blanco.", "Quedarse pálido tras un susto enorme."], "examples": ["Iba a responder la pregunta, pero me quedé totalmente en blanco.", "A la actriz le dio pánico escénico y se quedó en blanco."] },
+          { "id": "exp_032", "expression": "Estar al caer", "meaning": "Estar a punto de ocurrir o de llegar de forma inminente.", "distractors": ["Tener riesgo de tropezarse o caerse al suelo.", "Padecer debilidad física o mareo."], "examples": ["El autobús debe de estar al caer, ya son las ocho.", "La respuesta a tu solicitud de empleo está al caer."] },
+          { "id": "exp_033", "expression": "Tirar la toalla", "meaning": "Rendirse o abandonar un empeño o proyecto.", "distractors": ["Secarse el cuerpo tras salir de la ducha.", "Lanzar objetos en un centro deportivo."], "examples": ["A pesar de las dificultades, nunca tiró la toalla y aprobó.", "Lleva meses intentándolo y no piensa tirar la toalla ahora."] },
+          { "id": "exp_034", "expression": "Ser un cero a la izquierda", "meaning": "No tener ningún valor, importancia o influencia en un grupo.", "distractors": ["Usar números negativos en operaciones matemáticas.", "Ubicarse a la izquierda en una formación militar."], "examples": ["Siento que mis opiniones en las reuniones son un cero a la izquierda.", "No le piden consejo porque para ellos es un cero a la izquierda."] },
+          { "id": "exp_035", "expression": "Poner los puntos sobre las i", "meaning": "Aclarar la situación detalladamente y sin dejar dudas.", "distractors": ["Corregir faltas de ortografía en un documento.", "Aprender a escribir caligrafía clásica."], "examples": ["Antes de firmar el contrato, puso los puntos sobre las i.", "Conviene poner los puntos sobre las i para evitar confusiones futuras."] },
+          { "id": "exp_037", "expression": "Hacer oídos sordos", "meaning": "Ignorar deliberadamente lo que alguien dice o pide.", "distractors": ["Padecer problemas de audición o sordera.", "Escuchar música a volumen demasiado alto."], "examples": ["Hizo oídos sordos a los consejos de su médico y siguió fumando.", "La dirección hizo oídos sordos a las peticiones del personal."] },
+          { "id": "exp_038", "expression": "Consultar con la almohada", "meaning": "Tener que meditar una decisión durante la noche antes de actuar.", "distractors": ["Tener problemas de insomnio o mala postura.", "Comprar accesorios para la cama."], "examples": ["Es una oferta tentadora, pero prefiero consultarlo con la almohada.", "Consúltalo con la almohada y mañana me dices tu respuesta."] },
+          { "id": "exp_039", "expression": "Estar hasta en la sopa", "meaning": "Encontrarse a alguien o algo en todas partes de forma repetitiva.", "distractors": ["Comer sopa caliente a diario por dieta.", "Encontrar objetos extraños en la comida."], "examples": ["Ese actor está hasta en la sopa últimamente, sale en todas las películas.", "Las canciones de ese grupo están hasta en la sopa."] },
+          { "id": "exp_040", "expression": "Cruzar los dedos", "meaning": "Desear que algo salga bien o tener suerte.", "distractors": ["Sentir dolor en las articulaciones de las manos.", "Entrelazar las manos para hacer estiramientos."], "examples": ["Cruzo los dedos para que consigas el trabajo que quieres.", "Estamos cruzando los dedos para que no llueva durante la boda."] },
+          { "id": "exp_041", "expression": "Salirse con la suya", "meaning": "Conseguir lo que se desea a pesar de la oposición o dificultades.", "distractors": ["Abandonar un trayecto para ir por otro camino.", "Hacer las cosas sin pedir permiso a nadie."], "examples": ["Al final se salió con la suya y compró el coche que quería.", "Es muy副es muy insistente y siempre logra salirse con la suya."] },
+          { "id": "exp_042", "expression": "Bajar la guardia", "meaning": "Disminuir la atención o precaución ante un peligro potencial.", "distractors": ["Agacharse en un puesto de vigilancia de seguridad.", "Terminar un turno de trabajo nocturno."], "examples": ["No podemos bajar la guardia ante los ciberataques.", "Cuando bajó la guardia, le metieron un gol en el último minuto."] },
+          { "id": "exp_043", "expression": "Estar en su salsa", "meaning": "Estar en un entorno o actividad donde uno se desenvuelve a la perfección.", "distractors": ["Cocinar guisos con mucha salsa tradicional.", "Mancharse la ropa durante el almuerzo."], "examples": ["En los debates políticos él está verdaderamente en su salsa.", "Ponle a hablar de música y verás cómo está en su salsa."] },
+          { "id": "exp_044", "expression": "Llevar la voz cantante", "meaning": "Tener la iniciativa o el mando en un grupo o conversación.", "distractors": ["Ser el cantante principal en una banda de música.", "Hablar en un tono más elevado que los demás."], "examples": ["En esa negociación fue ella quien llevó la voz cantante.", "Su hermano siempre lleva la voz cantante en las decisiones familiares."] },
+          { "id": "exp_045", "expression": "Verlo todo de color de rosa", "meaning": "Ser excesivamente optimista e ingenuo ante las cosas.", "distractors": ["Padecer un trastorno visual de percepción de colores.", "Decorar un espacio con tonos rosados."], "examples": ["Cuando te enamoras tiendes a verlo todo de color de rosa.", "Es bueno ser positivo, pero no puedes verlo todo de color de rosa."] },
+          { "id": "exp_046", "expression": "Perder el tren", "meaning": "Desaprovechar una oportunidad única o importante.", "distractors": ["Llegar tarde a la estación de transporte público.", "Confundirse de vagón en un viaje."], "examples": ["Si no aceptas la beca ahora, vas a perder el tren de tu vida.", "Sintió que había perdido el tren al no comprar la casa a tiempo."] },
+          { "id": "exp_047", "expression": "Estar en las nubes", "meaning": "Estar distraído, despistado o pensando en otras cosas.", "distractors": ["Viajar en avión a gran altitud.", "Mirar la lluvia a través de la ventana."], "examples": ["Aterriza un poco, que siempre estás en las nubes durante la clase.", "Perdona, no te oí porque estaba en las nubes."] },
+          { "id": "exp_048", "expression": "Echar de menos", "meaning": "Sentir la falta o añoranza de una persona o lugar.", "distractors": ["Descartar objetos en una limpieza de casa.", "Llegar tarde a un compromiso pactado."], "examples": ["Echo mucho de menos a mis amigos cuando viajo.", "Se nota que echa de menos vivir en su ciudad natal."] },
+          { "id": "exp_050", "expression": "Morderse la lengua", "meaning": "Reprimirse y no decir lo que se piensa para evitar un conflicto.", "distractors": ["Sufrir un accidente masticando alimentos.", "Tener dificultad para pronunciar ciertas palabras."], "examples": ["Tuve que morderme la lengua para no contestarle mal a mi jefe.", "Es mejor morderse la lengua a veces que generar una discusión."] },
+          { "id": "exp_051", "expression": "Estar hasta la coronilla", "meaning": "Estar profundamente harto o cansado de una situación.", "distractors": ["Tener dolor de cabeza intenso en la zona superior.", "Llevar un sombrero demasiado ajustado."], "examples": ["Estoy hasta la coronilla de tus excusas diarias.", "En la oficina están hasta la coronilla del nuevo horario."] },
+          { "id": "exp_052", "expression": "Montar un pollo", "meaning": "Organizar un escándalo, bronca o lío en público.", "distractors": ["Criar aves de corral en una finca rural.", "Preparar un almuerzo con carne de ave."], "examples": ["Montó un pollo en el restaurante porque la comida estaba fría.", "No montes un pollo aquí, hablemos pacíficamente en casa."] },
+          { "id": "exp_053", "expression": "Ser de cajón", "meaning": "Ser algo totalmente evidente, lógico e indiscutible.", "distractors": ["Estar guardado dentro de un mueble de oficina.", "Tener forma rectangular y rígida."], "examples": ["Que hay que ahorrar para el futuro es algo de cajón.", "Es de cajón que si no estudias no vas a aprobar."] },
+          { "id": "exp_054", "expression": "Echar pestes", "meaning": "Hablar muy mal de alguien o expresar gran enfado.", "distractors": ["Emitir malos olores por falta de higiene.", "Fumigar una habitación contra insectos."], "examples": ["Salió de la reunión echando pestes sobre la directiva.", "No pares de echar pestes y propone soluciones."] },
+          { "id": "exp_056", "expression": "Estar al pie del cañón", "meaning": "Permanecer firme y constante en el trabajo o deber.", "distractors": ["Servir en el ejército en primera línea de combate.", "Visitar monumentos históricos militares."], "examples": ["Lleva 30 años al pie del cañón en la misma tienda.", "A pesar de estar resfriado, estuvo al pie del cañón todo el día."] },
+          { "id": "exp_057", "expression": "Llevarse el gato al agua", "meaning": "Lograr vencer o conseguir un objetivo en una contienda.", "distractors": ["Bañar a una mascota felina con dificultad.", "Rescatar a un animal caído en un estanque."], "examples": ["Tras una dura negociación, nuestra empresa se llevó el gato al agua.", "En el debate final se llevó el gato al agua el candidato más preparado."] },
+          { "id": "exp_058", "expression": "Dejar tirado a alguien", "meaning": "Abandonar o defraudar a alguien que contaba con ayuda.", "distractors": ["Empujar a una persona al suelo involuntariamente.", "Olvidar recoger objetos prestados."], "examples": ["Me dejó tirado con toda la mudanza y tuve que hacerlo solo.", "No puedes dejar tirado a tu socio en medio del proyecto."] },
+          { "id": "exp_059", "expression": "Hacer la vista gorda", "meaning": "Fingir no haber visto una infracción o falta.", "distractors": ["Tener un problema visual por fatiga ocular.", "Usar gafas con cristales demasiado gruesos."], "examples": ["El policía hizo la vista gorda y no le puso multa.", "A veces los padres hacen la vista gorda con pequeñas travesuras."] },
+          { "id": "exp_060", "expression": "Dar la espalda", "meaning": "Negar la ayuda o dar la espalda a alguien necesitado.", "distractors": ["Girarse físicamente durante una conversación.", "Hacer ejercicios de estiramiento dorsal."], "examples": ["Cuando tuvo problemas económicos, sus amigos le dieron la espalda.", "Jamás le daría la espalda a un familiar que me necesita."] },
+          { "id": "exp_061", "expression": "Tener morro", "meaning": "Ser descarado, caradura o sinvergüenza.", "distractors": ["Tener rasgos faciales pronunciados.", "Padecer hinchazón en los labios."], "examples": ["¡Qué morro tiene! Se comió mi postre sin pedir permiso.", "Hay que tener mucho morro para colarse en la fila."] },
+          { "id": "exp_062", "expression": "Pasar por el aro", "meaning": "Aceptar hacer algo a la fuerza o a regañadientes.", "distractors": ["Hacer piruetas en un espectáculo de circo.", "Entrenar en gimnasia de competición."], "examples": ["No quería trabajar el fin de semana, pero tuvo que pasar por el aro.", "Al final el cliente pasó por el aro y pagó la tarifa."] },
+          { "id": "exp_063", "expression": "Cortar el bacalao", "meaning": "Ser quien manda o toma las decisiones principales.", "distractors": ["Trabajar en una pescadería o cocina profesional.", "Preparar pescado salado para cocinar."], "examples": ["En este departamento es María la que corta el bacalao.", "Aquí el que corta el bacalao es el director general."] },
+          { "id": "exp_064", "expression": "Quedarse tan ancho", "meaning": "Quedarse totalmente tranquilo tras hacer algo reprochable.", "distractors": ["Ganar volumen corporal tras una comida copiosa.", "Ocupar mucho espacio al sentarse."], "examples": ["Le soltó una grosería y se quedó tan ancho.", "Dijo una mentira enorme y se quedó tan pancho y tan ancho."] },
+          { "id": "exp_066", "expression": "Poner pegas", "meaning": "Poner inconvenientes o buscar problemas a todo.", "distractors": ["Pegar etiquetas en embalajes comerciales.", "Usar pegamento en trabajos manuales."], "examples": ["Siempre le pone pegas a cualquier plan que propongo.", "Aceptó la propuesta sin poner ninguna pega."] },
+          { "id": "exp_067", "expression": "No tener pelos en la lengua", "meaning": "Decir las cosas de forma directa y sin tapujos.", "distractors": ["Tener afecciones bucales o molestias en la lengua.", "Hablar muy deprisa sin articular bien."], "examples": ["Es una mujer franca que no tiene pelos en la lengua.", "Te dirá exactamente lo que piensa, no tiene pelos en la lengua."] },
+          { "id": "exp_068", "expression": "Echar leña al fuego", "meaning": "Empeorar una disputa o problema con comentarios provocadores.", "distractors": ["Encender una chimenea en época de invierno.", "Hacer tareas de mantenimiento en el campo."], "examples": ["No le digas nada más, solo estás echando leña al fuego.", "Sus palabras echaron más leña al fuego de la discusión."] },
+          { "id": "exp_069", "expression": "Hacer borrón y cuenta nueva", "meaning": "Olvidar ofensas o diferencias pasadas y empezar de nuevo.", "distractors": ["Manchar de tinta un cuaderno de contabilidad.", "Reiniciar un sistema informático dañado."], "examples": ["Decidieron hacer borrón y cuenta nueva y volver a ser amigos.", "Lo mejor es hacer borrón y cuenta nueva y no guardar rencor."] },
+          { "id": "exp_070", "expression": "Sacar de quicio", "meaning": "Hacer perder la paciencia o enfurecer a alguien.", "distractors": ["Desmontar el marco de una puerta en obras.", "Forzar la cerradura de una entrada."], "examples": ["El ruido constante de las obras me saca de quicio.", "Sus constantes interrupciones me sacaron de quicio."] },
+          { "id": "exp_071", "expression": "Dar la cara", "meaning": "Asumir la responsabilidad de las propias acciones.", "distractors": ["Orientar el rostro hacia una cámara fotográfica.", "Recibir un golpe en la parte frontal de la cabeza."], "examples": ["Cometió un error, pero al menos dio la cara ante el equipo.", "Hay que dar la cara cuando las cosas no salen bien."] },
+          { "id": "exp_072", "expression": "Estar de buen humor", "meaning": "Tener un estado de ánimo alegre y positivo.", "distractors": ["Tener gracia al contar chistes o bromas.", "Disfrutar de espectáculos de comedia."], "examples": ["Hoy el jefe está de muy buen humor.", "Cuando está de buen humor nos invita a café a todos."] },
+          { "id": "exp_074", "expression": "Dormirse en los laureles", "meaning": "Relajarse o dejar de esforzarse tras lograr un éxito.", "distractors": ["Dormir sobre hojas de plantas aromáticas.", "Descansar en un parque público durante el día."], "examples": ["Ganamos el primer partido, pero no hay que dormirse en los laureles.", "Si te duermes en los laureles, la competencia te superará."] },
+          { "id": "exp_075", "expression": "Perder los papeles", "meaning": "Perder el control, la compostura o los nervios.", "distractors": ["Extraviar documentos importantes de oficina.", "Olvidar el guion de una obra teatral."], "examples": ["Jamás le había visto perder los papeles de esa manera.", "Pido disculpas, perdí los papeles por el estrés del momento."] },
+          { "id": "exp_076", "expression": "Ir a toda pastilla", "meaning": "Ir a altísima velocidad o muy deprisa.", "distractors": ["Tomar medicamentos con rapidez.", "Consumir golosinas o caramelos rápidamente."], "examples": ["Ese coche iba a toda pastilla por la autopista.", "Tuvimos que trabajar a toda pastilla para entregar a tiempo."] },
+          { "id": "exp_077", "expression": "Estar hecho polvo", "meaning": "Estar sumamente cansado o muy abatido emocionalmente.", "distractors": ["Ensuciarse la ropa de tierra en el campo.", "Limpiar superficies cubiertas de suciedad."], "examples": ["Tras la maratón estaba totalmente hecho polvo.", "Quedó hecho polvo tras la noticia de la ruptura."] },
+          { "id": "exp_078", "expression": "Estar chupado", "meaning": "Ser facilísimo de realizar o resolver.", "distractors": ["Mojarse completamente por la lluvia.", "Quedarse delgado tras una enfermedad."], "examples": ["El examen de conducir teórica está chupado.", "No te agobies por el montaje del mueble, está chupado."] },
+          { "id": "exp_079", "expression": "Tirarse de los pelos", "meaning": "Desesperarse o arrepentirse enormemente de algo.", "distractors": ["Hacerse peinados agresivos en la cabeza.", "Tener picores en el cuero cabelludo."], "examples": ["Se tiraba de los pelos por no haber comprado la casa a tiempo.", "Cuando vio la pérdida de dinero se tiraba de los pelos."] },
+          { "id": "exp_080", "expression": "Caer la del pulpo", "meaning": "Recibir una gran paliza, reprimenda o castigo severo.", "distractors": ["Llover mariscos del cielo en una tormenta.", "Cocinar cefalópodos al estilo tradicional."], "examples": ["Como no limpies tu habitación, te va a caer la del pulpo.", "A la selección de fútbol le cayó la del pulpo en el partido."] },
+          { "id": "exp_081", "expression": "Importar un pimiento", "meaning": "No importar absolutamente nada, dar igual.", "distractors": ["Comprar verduras en el mercado central.", "Cultivar hortalizas en un huerto urbano."], "examples": ["Me importa un pimiento lo que piensen los demás de mi ropa.", "A él le importa un pimiento que sea tarde."] },
+          { "id": "exp_082", "expression": "Meter cizaña", "meaning": "Malmeter o malinformar para provocar desacuerdos.", "distractors": ["Retirar malas hierbas de un cultivo de trigo.", "Sembrar semillas en un campo de labranza."], "examples": ["Ella siempre mete cizaña entre los dos hermanos.", "No escuches sus comentarios, solo quiere meter cizaña."] },
+          { "id": "exp_083", "expression": "Ser la leche", "meaning": "Ser algo o alguien extraordinario, genial o asombroso.", "distractors": ["Ser un producto lácteo de consumo diario.", "Tener la piel extremadamente blanca."], "examples": ["¡Esa nueva aplicación es la leche, lo hace todo solo!", "Tu amigo es la leche, siempre nos hace reír."] },
+          { "id": "exp_084", "expression": "Caer chuzos de punta", "meaning": "Llover o granizar de forma extremadamente violenta.", "distractors": ["Caer objetos punzantes desde un balcón.", "Lanzar armas antiguas en un combate."], "examples": ["Mejor no salgas ahora, están cayendo chuzos de punta.", "Tuvimos que resguardarnos porque caían chuzos de punta."] },
+          { "id": "exp_085", "expression": "Salir a pedir de boca", "meaning": "Salir algo perfectamente, tal como se había planeado.", "distractors": ["Expresar deseos de comida en voz alta.", "Pedir cita con el dentista para revisión."], "examples": ["El evento de presentación salió a pedir de boca.", "Todo ha salido a pedir de boca, no podríamos estar más contentos."] },
+          { "id": "exp_086", "expression": "Dar la chapa", "meaning": "Aburrir a alguien con conversaciones largas y pesadas.", "distractors": ["Entregar chapas metálicas de refresco.", "Trabajar en la reparación de carrocerías."], "examples": ["Estuvo dos horas dándome la chapa sobre su coche nuevo.", "Perdona si te estoy dando la chapa con mis problemas."] },
+          { "id": "exp_087", "expression": "Ponérsele a alguien los pelos de punta", "meaning": "Sentir un escalofrío por miedo, emoción o impresión.", "distractors": ["Peinarse con gomina hacia arriba.", "Padecer electricidad estática en el cabello."], "examples": ["Se me pusieron los pelos de punta al escuchar esa música.", "La película de terror me puso los pelos de punta."] },
+          { "id": "exp_088", "expression": "Echar flores", "meaning": "Halagar, piropear o alabar en exceso a alguien.", "distractors": ["Lanzar pétalos en una fiesta o procesión.", "Plantar flores en el balcón de casa."], "examples": ["No pares de echarle flores a tu jefe para agradarle.", "Se pasó toda la noche echándole flores a su cita."] },
+          { "id": "exp_089", "expression": "Hacerse el sueco", "meaning": "Desentenderse de algo o simular no comprender.", "distractors": ["Viajar de vacaciones a un país escandinavo.", "Aprender idiomas nórdicos en la universidad."], "examples": ["Le pregunté por la deuda y se hizo el sueco.", "No te hagas el sueco, sabes perfectamente de lo que hablo."] },
+          { "id": "exp_090", "expression": "Tirar del hilo", "meaning": "Investigar una pista para descubrir algo más complejo.", "distractors": ["Coser prendas de vestir con aguja.", "Desenrollar una bobina de costura."], "examples": ["La policía tiró del hilo y descubrió la red de fraude.", "Si tiras del hilo verás que hay mucha más gente involucrada."] },
+          { "id": "exp_091", "expression": "Estar por los suelos", "meaning": "Tener un estado de ánimo bajo o precios muy reducidos.", "distractors": ["Estar tirado descansando en la moqueta.", "Limpiar las baldosas de una casa."], "examples": ["Tras la noticia, su estado de ánimo está por los suelos.", "En esa tienda los precios están por los suelos."] },
+          { "id": "exp_092", "expression": "Traer de cabeza", "meaning": "Preocupar o agobiar mucho a alguien un asunto.", "distractors": ["Llevar objetos pesados sobre la frente.", "Padecer migrañas recurrentes."], "examples": ["Este problema de matemáticas me trae de cabeza.", "Los ruidos de los vecinos nos traen de cabeza desde hace semanas."] },
+          { "id": "exp_093", "expression": "Sentar como un tiro", "meaning": "Causar un gran malestar físico o disgusto emocional.", "distractors": ["Practicar tiro al blanco en un club deportivo.", "Recibir un disparo de fuego."], "examples": ["Esa comida tan picante me sentó como un tiro.", "Le sentó como un tiro que no le invitaran a la reunión."] },
+          { "id": "exp_094", "expression": "Tener una corazonada", "meaning": "Tener la sensación intuitiva de que algo va a ocurrir.", "distractors": ["Padecer palpitaciones en el pecho.", "Sentir afecto muy intenso por alguien."], "examples": ["Tengo la corazonada de que hoy nos va a tocar algo en el sorteo.", "Tuvo una corazonada y decidió no subir a ese avión."] },
+          { "id": "exp_095", "expression": "Dar rienda suelta", "meaning": "Permitir la libre expresión de sentimientos o creatividad.", "distractors": ["Quitar los arneses a un caballo de carreras.", "Soltar a un animal en un prado abierto."], "examples": ["Dio rienda suelta a su imaginación y escribió un libro brillante.", "En la fiesta dieron rienda suelta a su alegría."] },
+          { "id": "exp_096", "expression": "Estar a dos velas", "meaning": "Estar sin dinero o sin actividad afectivo-sexual.", "distractors": ["Iluminar una estancia con velas de cera.", "Colocar adornos en un pastel de cumpleaños."], "examples": ["Este mes no puedo salir a cenar, estoy a dos velas.", "Lleva casi un año soltero y está a dos velas."] },
+          { "id": "exp_097", "expression": "Echar balones fuera", "meaning": "Evitar responder o eludir una responsabilidad desviando el tema.", "distractors": ["Lanzar pelotas fuera del campo de juego.", "Entrenar deportes de equipo al aire libre."], "examples": ["Cuando le preguntaron por el error, echó balones fuera.", "El político echó balones fuera durante toda la entrevista."] },
+          { "id": "exp_098", "expression": "Ser un gorrón", "meaning": "Aprovecharse del dinero o bienes ajenos sin aportar nada.", "distractors": ["Cuidar de aves pequeñas en un aviario.", "Usar gorras o sombreros voluminosos."], "examples": ["Nunca paga nada cuando salimos, es un gorrón.", "Invitar a ese gorrón sale muy caro."] },
+          { "id": "exp_099", "expression": "Cruzarse los cables", "meaning": "Sufrir una locura repentina o perder el control temporalmente.", "distractors": ["Unir instalaciones eléctricas en una casa.", "Tener un fallo en la red telefónica."], "examples": ["Se le cruzaron los cables y empezó a gritar sin sentido.", "Perdona, se me cruzaron los cables y dije una tontería."] },
+          { "id": "exp_100", "expression": "Estar de Rodríguez", "meaning": "Quedarse trabajando en casa mientras la familia está de vacaciones.", "distractors": ["Cambiar el apellido legalmente por otro común.", "Acompañar a familiares a la playa."], "examples": ["Este verano me toca estar de Rodríguez todo el mes de julio.", "Su mujer se fue con los niños al pueblo y él se quedó de Rodríguez."] },
+          { "id": "exp_101", "expression": "Llevarse una pataleta", "meaning": "Tener un berrinche o enfado infantil exagerado.", "distractors": ["Dar patadas a un objeto en el suelo.", "Padecer dolencias en las piernas por ejercicio."], "examples": ["El niño se llevó una pataleta porque no le compraron el juguete.", "No te lleves una pataleta por algo de tan poca importancia."] },
+          { "id": "exp_102", "expression": "Ser un agonías", "meaning": "Ser una persona muy pesimista que se agobia por todo.", "distractors": ["Sufrir problemas respiratorios severos.", "Encontrarse en situación médica crítica."], "examples": ["No seas tan agonías, que el problema se resolverá fácil.", "Es un agonías que cree que todo va a salir mal."] },
+          { "id": "exp_103", "expression": "Dar el cante", "meaning": "Llamar la atención de forma ridícula, estrafalaria o negativa.", "distractors": ["Cantar canciones en un escenario teatral.", "Participar en un coro de música clásica."], "examples": ["Iba vestido con ropa fosforita y daba totalmente el cante.", "Intentamos pasar desapercibidos, pero Juan dio el cante."] },
+          { "id": "exp_105", "expression": "Hacer piña", "meaning": "Unirse fuertemente un grupo para apoyarse mutuamente.", "distractors": ["Cosechar o preparar frutas tropicales.", "Comprar piñas en el mercado local."], "examples": ["En momentos difíciles el equipo supo hacer piña.", "Tenemos que hacer piña para defender nuestra postura."] },
+          { "id": "exp_106", "expression": "Tener agujetas", "meaning": "Sentir dolor muscular tras realizar ejercicio intenso.", "distractors": ["Tener alfileres o útiles de costura.", "Llevar ropa con adornos metálicos."], "examples": ["Tengo unas agujetas terribles en las piernas tras el gimnasio.", "Si no calientas antes de entrenar, tendrás agujetas."] },
+          { "id": "exp_107", "expression": "Echar raíces", "meaning": "Establecerse de forma permanente en un lugar.", "distractors": ["Regar las plantas del jardín de casa.", "Sembrar árboles en una parcela rural."], "examples": ["Llevan diez años viviendo aquí y ya han echado raíces.", "Me gusta viajar tanto que me cuesta echar raíces en una ciudad."] },
+          { "id": "exp_108", "expression": "Tener vista de lince", "meaning": "Tener una capacidad visual excelente o percatarse de todo.", "distractors": ["Fotografiar animales salvajes en el monte.", "Tener rasgos felinos en el rostro."], "examples": ["Mi abuela tiene vista de lince y ve las letras más pequeñas.", "Hay que tener vista de lince para detectar ese error de imprenta."] },
+          { "id": "exp_109", "expression": "Ir a su bola", "meaning": "Actuar de manera independiente sin importar lo que piensen los demás.", "distractors": ["Jugar a deportes de esferas o bolos.", "Rodar objetos redondos por el suelo."], "examples": ["A él no le gustan las reglas, siempre va a su bola.", "Ella va a su bola y no suele ir a reuniones de grupo."] },
+          { "id": "exp_110", "expression": "Ser un gallina", "meaning": "Ser una persona cobarde o temerosa.", "distractors": ["Criar aves en una granja de campo.", "Cacarear imitando a los animales."], "examples": ["¡No seas gallina y salta a la piscina!", "Le dio miedo subir a la montaña rusa porque es un gallina."] },
+          { "id": "exp_111", "expression": "Dar la nota", "meaning": "Hacer algo que llama la atención por ser fuera de lugar.", "distractors": ["Escribir notas musicales en un cuaderno.", "Calificar con notas a los alumnos de clase."], "examples": ["Bebió de más y empezó a dar la nota en la fiesta.", "Siempre le gusta dar la nota para que todos le miren."] },
+          { "id": "exp_112", "expression": "Estar de cháchara", "meaning": "Estar conversando animadamente sobre cosas triviales.", "distractors": ["Comprar artículos baratos en un mercadillo.", "Bailar música tradicional en fiestas."], "examples": ["Estuvieron de cháchara en la esquina durante horas.", "Llegué tarde porque me encontré con un vecino y estuvimos de cháchara."] },
+          { "id": "exp_113", "expression": "Llover a cántaros", "meaning": "Llover de forma muy intensa y abundante.", "distractors": ["Transportar vasijas con agua de un pozo.", "Llenar recipientes de barro bajo el grifo."], "examples": ["No podemos salir a pasear porque está lloviendo a cántaros.", "Ayer por la tarde llovió a cántaros y se inundó la calle."] },
+          { "id": "exp_114", "expression": "Quitar el hipo", "meaning": "Ser algo tan impresionante, bello o sustancioso que asombra.", "distractors": ["Dar un susto a alguien para curar un espasmo.", "Beber agua de un trago sin respirar."], "examples": ["Tiene un vestido de gala que quita el hipo.", "Las vistas desde ese mirador de la montaña quitan el hipo."] },
+          { "id": "exp_115", "expression": "Estar a la que salta", "meaning": "Estar a la defensiva o atento para criticar u objetar de inmediato.", "distractors": ["Practicar saltos de atletismo en pista.", "Entrenar agilidad física en gimnasia."], "examples": ["Últimamente está muy estresado y responde a la que salta.", "No se le puede decir nada porque está a la que salta."] },
+          { "id": "exp_116", "expression": "No tener ni pies ni cabeza", "meaning": "Carecer totalmente de sentido, lógica o coherencia.", "distractors": ["Dibujar figuras sin extremidades en arte.", "Padecer dolores corporales generales."], "examples": ["La historia que nos contó no tenía ni pies ni cabeza.", "Esa teoría extravagante no tiene ni pies ni cabeza."] },
+          { "id": "exp_117", "expression": "Caer de pie", "meaning": "Tener suerte o salir bien librado de una situación difícil.", "distractors": ["Aterrizar erguido tras un salto gimnástico.", "Usar calzado cómodo para caminar."], "examples": ["Cambió de empresa y volvió a caer de pie con un gran puesto.", "Es una persona con suerte, siempre cae de pie."] },
+          { "id": "exp_119", "expression": "Estar como una tapia", "meaning": "Estar completamente sordo o no oír nada.", "distractors": ["Construir paredes con ladrillo o piedra.", "Apoyarse en un muro para descansar."], "examples": ["Tienes que hablarle muy alto porque está como una tapia.", "No oye el timbre porque está como una tapia."] },
+          { "id": "exp_120", "expression": "Poner un huevo", "meaning": "Tener que esforzarse al máximo o pasar un mal rato por un reto.", "distractors": ["Cocinar ingredientes para el desayuno.", "Criar gallinas ponedoras en el campo."], "examples": ["Para aprobar esa asignatura de matemáticas hay que poner un huevo.", "Tuve que poner un huevo para terminar el informe a tiempo."] },
+          { "id": "exp_121", "expression": "Tener la negra", "meaning": "Tener una racha constante de mala suerte.", "distractors": ["Vestir ropa de color oscuro.", "Padecer manchas en la piel."], "examples": ["Ayer se me rompió el móvil y hoy he perdido las llaves, ¡tengo la negra!", "Parece que tenemos la negra con el tiempo este fin de semana."] },
+          { "id": "exp_122", "expression": "Salirse por la tangente", "meaning": "Evitar responder directamente usando un argumento que no viene al caso.", "distractors": ["Dibujar figuras geométricas avanzadas.", "Conducir un vehículo fuera de la calzada."], "examples": ["Le pregunté sobre el presupuesto y se salió por la tangente.", "Siempre se sale por la tangente cuando no quiere admitir la verdad."] },
+          { "id": "exp_123", "expression": "Quedarse sin palabras", "meaning": "Quedarse mudo de la impresión, emoción o asombro.", "distractors": ["Perder el diccionario o textos escritos.", "Tener afonía severa en la garganta."], "examples": ["El regalo sorpresa me dejó totalmente sin palabras.", "Al ver el paisaje natural nos quedamos sin palabras."] },
+          { "id": "exp_124", "expression": "Estar en boca de todos", "meaning": "Ser el tema de conversación o cotilleo general.", "distractors": ["Probar alimentos en un banquete público.", "Repetir una frase al unísono en grupo."], "examples": ["Su escandaloso divorcio está en boca de todos.", "El éxito de su novela ha hecho que esté en boca de todos."] },
+          { "id": "exp_125", "expression": "Morder el polvo", "meaning": "Sufrir una derrota, fracaso o caer en combate.", "distractors": ["Caerse de boca en un camino de tierra.", "Saborear alimentos mal lavados."], "examples": ["El equipo rival mordió el polvo en el segundo tiempo.", "Muchos proyectos empresariales muerden el polvo el primer año."] },
+          { "id": "exp_127", "expression": "Ser un hueso duro de roer", "meaning": "Ser una persona o problema difícil de negociar, convencer o resolver.", "distractors": ["Cocinar carnes duras con hueso.", "Padecer problemas dentales al comer."], "examples": ["Ese negociador es un hueso duro de roer, no cede nada.", "El examen de física siempre ha sido un hueso duro de roer."] },
+          { "id": "exp_128", "expression": "Echar chispas", "meaning": "Estar enormemente enfadado o furioso.", "distractors": ["Producir cortocircuitos eléctricos con cables.", "Encender hogueras con piedras."], "examples": ["El jefe salió de la oficina echando chispas.", "Mejor no le hables ahora que está que echa chispas."] },
+          { "id": "exp_129", "expression": "Buscar tres pies al gato", "meaning": "Complicar un asunto buscando inconvenientes donde no los hay.", "distractors": ["Examinar la anatomía de felinos domésticos.", "Jugar con mascotas en el suelo."], "examples": ["No le busques tres pies al gato, las cosas son tan simples como parecen.", "Siempre está buscando tres pies al gato a mis intenciones."] },
+          { "id": "exp_131", "expression": "Ir con la música a otra parte", "meaning": "Marcharse con sus opiniones, quejas o presencia a otro lugar.", "distractors": ["Transportar instrumentos de música en un viaje.", "Escuchar canciones con auriculares por la calle."], "examples": ["Si no te gusta el ambiente, puedes irte con tu música a otra parte.", "Le dijeron que se fuera con su música a otra parte y no molestara."] },
+          { "id": "exp_132", "expression": "Ponerse las pilas", "meaning": "Espabilarse, activar la energía y empezar a trabajar con rigor.", "distractors": ["Instalar baterías en dispositivos electrónicos.", "Cargar electrodomésticos en enchufes."], "examples": ["Como no te pongas las pilas, no vas a entregar a tiempo.", "El equipo se puso las pilas en la segunda mitad y ganó."] },
+          { "id": "exp_133", "expression": "Quedarse corto", "meaning": "Quedarse por debajo de la cantidad, estimación o medida necesaria.", "distractors": ["Cortarse el pelo más de lo deseado.", "Tener prendas de ropa pequeñas."], "examples": ["Pensábamos que vendrían veinte personas y nos quedamos cortos.", "Decir que el espectáculo fue bueno es quedarse corto."] },
+          { "id": "exp_134", "expression": "Ser un trozo de pan", "meaning": "Ser una persona extraordinariamente buena, noble y afable.", "distractors": ["Cortar pan fresco en la mesa para comer.", "Comprar productos de panadería artesanal."], "examples": ["Mi abuelo es un trozo de pan, nunca se enfada con nadie.", "Es tan buena persona que es verdaderamente un trozo de pan."] },
+          { "id": "exp_135", "expression": "Tener cuento", "meaning": "Ser un exagerado, dramático o fingir dolencias para llamar la atención.", "distractors": ["Escribir historias o relatos infantiles.", "Leer libros de literatura fantástica."], "examples": ["No le duele tanto la cabeza, lo que pasa es que tiene mucho cuento.", "¡Qué cuento tienes!, solo quieres evitar hacer las tareas."] },
+          { "id": "exp_136", "expression": "Lavarse las manos", "meaning": "Desentenderse de algo o eludir la responsabilidad.", "distractors": ["Mantener la higiene de extremidades superiores con jabón.", "Aclararse las manos antes de comer."], "examples": ["Él cometió el fallo, pero prefirió lavarse las manos.", "No puedes lavarte las manos ante las consecuencias de tu decisión."] },
+          { "id": "exp_137", "expression": "Estar pez", "meaning": "No saber nada o ignorar por completo un tema.", "distractors": ["Saber nadar muy bien en agua salada.", "Practicar pesca deportiva en ríos."], "examples": ["Estoy pez en historia contemporánea, tengo que estudiar mucho.", "Le preguntaron sobre finanzas y demostró estar pez."] },
+          { "id": "exp_138", "expression": "Salir el tiro por la culata", "meaning": "Obtener un resultado totalmente opuesto y perjudicial al esperado.", "distractors": ["Tener un accidente al disparar un arma.", "Limpiar equipos de caza en el campo."], "examples": ["Intentó dejarle mal ante todos y le salió el tiro por la culata.", "La estrategia publicitaria salió por la culata y perdieron clientes."] },
+          { "id": "exp_140", "expression": "Estar a años luz", "meaning": "Estar enormemente distante en nivel, calidad o avance.", "distractors": ["Medir distancias astronómicas en el espacio.", "Estudiar la velocidad de propagación de la luz."], "examples": ["Su tecnología está a años luz de la de sus competidores.", "En calidad de servicio estamos a años luz de ese restaurante."] },
+          { "id": "exp_141", "expression": "No dar pie con bola", "meaning": "Cometer errores continuos o no acertar en nada.", "distractors": ["Chutar mal la pelota en un partido de fútbol.", "Padecer torpeza motora al caminar."], "examples": ["Hoy tengo un día terrible, no doy pie con bola.", "En el examen de matemáticas no dio pie con bola."] },
+          { "id": "exp_142", "expression": "Tener la sartén por el mango", "meaning": "Estar en situación de pleno control y poder de decisión.", "distractors": ["Cocinar usando menaje de cocina tradicional.", "Evitar quemaduras al preparar alimentos."], "examples": ["En esta negociación el comprador tiene la sartén por el mango.", "Ellos tienen la sartén por el mango porque poseen la patente."] },
+          { "id": "exp_143", "expression": "Quedarse tan pancho", "meaning": "Quedarse totalmente despreocupado o indiferente ante algo.", "distractors": ["Tener la barriga llena tras una cena copiosa.", "Descansar en un sofá de forma holgazana."], "examples": ["Nos dejó todo el trabajo a nosotros y él se quedó tan pancho.", "Dijo una barbaridad y se quedó tan pancho."] },
+          { "id": "exp_144", "expression": "Ser la caña", "meaning": "Ser genial, divertido, sorprendente o excelente.", "distractors": ["Practicar pesca con vara en el mar.", "Cultivar plantas de tallo alto en el campo."], "examples": ["¡Tu hermano es la caña, no paramos de reír con él!", "Esta película de acción es la caña."] },
+          { "id": "exp_145", "expression": "Estar hecho un flan", "meaning": "Estar sumamente nervioso o tembloroso.", "distractors": ["Cocinar postres caseros de huevo y leche.", "Comer dulces blandos en la merienda."], "examples": ["Antes de subir al escenario estaba hecho un flan.", "Iba hecho un flan a su examen práctico de conducir."] },
+          { "id": "exp_146", "expression": "Ser un lince", "meaning": "Ser una persona muy ágil de mente, astuta y lista.", "distractors": ["Pertenecer a una especie animal protegida.", "Tener reflejos rápidos de caza."], "examples": ["Para los negocios hay que ser un lince.", "Es un lince detectando oportunidades de inversión."] },
+          { "id": "exp_147", "expression": "Poner cara de póquer", "meaning": "Mostrar una expresión neutra que no revela lo que se piensa.", "distractors": ["Participar en juegos de cartas en un casino.", "Usar antifaces o disfraces en fiestas."], "examples": ["Mantuvo cara de póquer durante toda la negociación.", "Ante la pregunta del periodista puso cara de póquer y no dijo nada."] },
+          { "id": "exp_148", "expression": "Pagar los platos rotos", "meaning": "Sufrir las consecuencias desagradables de un fallo cometido por otros.", "distractors": ["Comprar vajilla nueva para reemplazar la dañada.", "Ayudar a recoger la mesa después de un banquete."], "examples": ["Él no tuvo la culpa de la avería, pero le tocó pagar los platos rotos.", "Siempre soy yo quien acaba pagando los platos rotos en esta oficina."] },
+          { "id": "exp_149", "expression": "Hacer castillos en el aire", "meaning": "Imaginar planes fantásticos o proyectos poco realistas.", "distractors": ["Construir figuras de arena en la playa.", "Diseñar edificios de arquitectura moderna."], "examples": ["Deja de hacer castillos en el aire y concéntrate en buscar empleo.", "Es muy soñador y siempre está haciendo castillos en el aire."] },
+          { "id": "exp_150", "expression": "Tener mucho temple", "meaning": "Mantener la calma y serenidad en momentos de gran tensión.", "distractors": ["Ajustar la temperatura de una estancia.", "Poseer fuerza física en las extremidades."], "examples": ["El piloto demostró tener mucho temple durante la maniobra de emergencia.", "Hay que tener mucho temple para hablar en público en esas condiciones."] }
+        ];
+
+        let currentItem = null;
+        let isSubmitted = false;
+
+        // Shuffle utility
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            const newArray = [...array];
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [newArray[currentIndex], newArray[randomIndex]] = [newArray[randomIndex], newArray[currentIndex]];
+            }
+            return newArray;
+        }
+
+        function loadQuestion() {
+            isSubmitted = false;
+            
+            // Pick random expression
+            const randomIndex = Math.floor(Math.random() * expressions.length);
+            currentItem = expressions[randomIndex];
+
+            // Render expression header
+            document.getElementById('expression-text').textContent = currentItem.expression;
+
+            // Prepare choices
+            const choices = shuffle([
+                { text: currentItem.meaning, isCorrect: true },
+                { text: currentItem.distractors[0], isCorrect: false },
+                { text: currentItem.distractors[1], isCorrect: false }
+            ]);
+
+            // Render choices
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            choices.forEach((choice, index) => {
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                label.id = `option-label-${index}`;
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'quiz-option';
+                radio.value = choice.isCorrect ? 'correct' : 'incorrect';
+                radio.id = `opt-${index}`;
+                
+                const span = document.createElement('span');
+                span.textContent = choice.text;
+
+                label.appendChild(radio);
+                label.appendChild(span);
+                optionsContainer.appendChild(label);
+            });
+
+            // Render examples
+            const examplesList = document.getElementById('examples-list');
+            examplesList.innerHTML = '';
+            currentItem.examples.forEach(ex => {
+                const li = document.createElement('li');
+                li.textContent = ex;
+                examplesList.appendChild(li);
+            });
+
+            // Reset UI state
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'none';
+            feedback.className = 'feedback-message';
+            
+            document.getElementById('btn-submit').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+            document.getElementById('btn-exit-active').classList.add('hidden');
+        }
+
+        function submitAnswer() {
+            const selectedRadio = document.querySelector('input[name="quiz-option"]:checked');
+            if (!selectedRadio) {
+                alert('Por favor, selecciona una respuesta.');
+                return;
+            }
+
+            isSubmitted = true;
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+
+            const options = document.querySelectorAll('.option-label');
+            options.forEach(label => {
+                const radio = label.querySelector('input[type="radio"]');
+                radio.disabled = true;
+
+                if (radio.value === 'correct') {
+                    label.classList.add('correct');
+                } else if (radio.checked) {
+                    label.classList.add('incorrect');
+                }
+            });
+
+            if (selectedRadio.value === 'correct') {
+                feedback.textContent = '¡Correcto!';
+                feedback.classList.add('correct');
+            } else {
+                feedback.textContent = 'Incorrecto';
+                feedback.classList.add('incorrect');
+            }
+
+            // Update action buttons
+            document.getElementById('btn-submit').classList.add('hidden');
+            document.getElementById('btn-next').classList.remove('hidden');
+            document.getElementById('btn-exit-active').classList.remove('hidden');
+        }
+
+        function loadNextQuestion() {
+            loadQuestion();
+        }
+
+        function exitApp() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('exit-screen').classList.remove('hidden');
+        }
+
+        function restartQuiz() {
+            document.getElementById('exit-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // Initialize quiz on load
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
